@@ -1,0 +1,11 @@
+{
+  "name": "enterprise-contract-risk-analyzer",
+  "version": "1.0.0",
+  "description": "AI-Powered Legal Intelligence",
+  "scripts": {
+    "start": "echo 'Run via Vercel dev or deploy to Vercel'"
+  },
+  "dependencies": {
+    "@google/generativeai": "^0.2.1"
+  }
+}
