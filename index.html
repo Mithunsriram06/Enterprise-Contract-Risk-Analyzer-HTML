@@ -1,11 +1,88 @@
-{
-  "name": "enterprise-contract-risk-analyzer",
-  "version": "1.0.0",
-  "description": "AI-Powered Legal Intelligence",
-  "scripts": {
-    "start": "echo 'Run via Vercel dev or deploy to Vercel'"
-  },
-  "dependencies": {
-    "@google/generativeai": "^0.2.1"
-  }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Contract Risk Analyzer</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Supabase & PDF.js CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+</head>
+<body>
+  
+  <!-- AUTHENTICATION SCREEN -->
+  <div id="auth-container" class="auth-screen">
+    <div class="auth-box">
+      <div class="pill-badge">AI-POWERED LEGAL INTELLIGENCE</div>
+      <h1>Enterprise Contract<br>Risk Analyzer</h1>
+      <p>Sign in to audit your commercial contracts for legal vulnerabilities instantly.</p>
+      
+      <div id="auth-error" class="error-msg" style="display: none;"></div>
+      
+      <input type="email" id="email" placeholder="Corporate Email Address">
+      <input type="password" id="password" placeholder="Security Access Code">
+      
+      <div class="auth-buttons">
+        <button id="btn-login" class="btn-primary">Sign In</button>
+        <button id="btn-signup" class="btn-secondary">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP DASHBOARD (Hidden by default) -->
+  <div id="app-container" class="app-screen" style="display: none;">
+    <div class="sidebar">
+      <h2>Workstation Portal</h2>
+      <div class="user-info">
+        <span>Session Verified:</span>
+        <code id="user-email"></code>
+      </div>
+      <button id="btn-logout" class="btn-secondary" style="width: 100%; margin-top: 20px;">Terminate Session</button>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <h1>New Contract Analysis</h1>
+        <p>Upload a PDF or plain-text contract file to parse and analyse commercial risk.</p>
+      </div>
+
+      <div class="upload-area">
+        <input type="file" id="file-upload" accept=".pdf,.txt">
+        <button id="btn-analyze" class="btn-primary" disabled>Run Risk Analysis</button>
+      </div>
+      
+      <div id="loading-spinner" style="display: none; margin-top: 20px; color: #a78bfa;">
+        Processing document and running AI compliance audit...
+      </div>
+
+      <!-- DASHBOARD RESULTS -->
+      <div id="results-dashboard" style="display: none; margin-top: 40px;">
+        <hr>
+        <h2 id="doc-title"></h2>
+        
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <label>Overall Risk Score</label>
+            <div id="score-val" class="metric-value">0 / 100</div>
+          </div>
+          <div class="metric-card"><label>High Severity</label><div id="high-val" class="metric-value">0</div></div>
+          <div class="metric-card"><label>Medium Severity</label><div id="med-val" class="metric-value">0</div></div>
+          <div class="metric-card"><label>Low Severity</label><div id="low-val" class="metric-value">0</div></div>
+        </div>
+
+        <h3>Executive Summary</h3>
+        <div class="info-box" id="summary-text"></div>
+
+        <h3>Identified Risk Clauses & Revisions</h3>
+        <div id="clauses-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link your custom logic -->
+  <script src="/app.js"></script>
+</body>
+</html>
