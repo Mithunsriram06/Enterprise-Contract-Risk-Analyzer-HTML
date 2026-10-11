@@ -44,6 +44,66 @@ document.getElementById('btn-show-login').addEventListener('click', () => {
   document.getElementById('auth-subtitle').innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
   authError.style.display = 'none';
 });
+// Toggle to Forgot Password Mode
+document.getElementById('btn-show-reset').addEventListener('click', () => {
+  document.getElementById('password').style.display = 'none';
+  document.getElementById('dob').style.display = 'block';
+  document.getElementById('new-password').style.display = 'block';
+  
+  document.getElementById('login-buttons').style.display = 'none';
+  document.getElementById('signup-buttons').style.display = 'none';
+  document.getElementById('reset-buttons').style.display = 'flex';
+  
+  document.getElementById('auth-subtitle').innerText = "Enter your email and Date of Birth to reset your password.";
+  authError.style.display = 'none';
+});
+
+// Reusable Back to Login function
+const resetToLogin = () => {
+  document.getElementById('password').style.display = 'block';
+  document.getElementById('dob').style.display = 'none';
+  document.getElementById('new-password').style.display = 'none';
+  
+  document.getElementById('login-buttons').style.display = 'flex';
+  document.getElementById('signup-buttons').style.display = 'none';
+  document.getElementById('reset-buttons').style.display = 'none';
+  
+  document.getElementById('auth-subtitle').innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
+  authError.style.display = 'none';
+};
+
+document.getElementById('btn-back-login1').addEventListener('click', resetToLogin);
+document.getElementById('btn-back-login2').addEventListener('click', resetToLogin);
+
+// Execute Confirm Password Reset
+document.getElementById('btn-confirm-reset').addEventListener('click', async () => {
+  const email = document.getElementById('email').value;
+  const dob = document.getElementById('dob').value;
+  const newPassword = document.getElementById('new-password').value;
+  
+  if (!email || !dob || !newPassword) {
+    authError.innerText = "Please complete all fields to reset your password.";
+    authError.style.display = 'block';
+    return;
+  }
+
+  // Call the Vercel Admin API Bridge
+  const response = await fetch('/api/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, dob, newPassword })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    authError.innerText = data.error;
+    authError.style.display = 'block';
+  } else {
+    alert("Password reset successfully! You can now sign in with your new password.");
+    resetToLogin();
+  }
+});
 
 // Navigation Toggles
 const viewNew = document.getElementById('new-analysis-view');
