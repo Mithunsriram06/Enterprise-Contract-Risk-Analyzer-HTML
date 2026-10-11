@@ -18,17 +18,28 @@
     <div class="auth-box">
       <div class="pill-badge">AI-POWERED LEGAL INTELLIGENCE</div>
       <h1>Enterprise Contract<br>Risk Analyzer</h1>
-      <p>Sign in to audit your commercial contracts for legal vulnerabilities instantly.</p>
+      <p id="auth-subtitle">Sign in to audit your commercial contracts for legal vulnerabilities instantly.</p>
       
       <div id="auth-error" class="error-msg" style="display: none;"></div>
       
       <input type="email" id="email" placeholder="Corporate Email Address">
       <input type="password" id="password" placeholder="Security Access Code">
       
-      <div class="auth-buttons">
+      <!-- Hidden by default, shown only during Account Creation -->
+      <input type="date" id="dob" style="display: none;" title="Date of Birth">
+      
+      <!-- Login State Buttons -->
+      <div id="login-buttons" class="auth-buttons">
         <button id="btn-login" class="btn-primary">Sign In</button>
-        <button id="btn-signup" class="btn-secondary">Create Account</button>
+        <button id="btn-show-signup" class="btn-secondary">Create Account</button>
       </div>
+
+      <!-- Signup State Buttons (Hidden by default) -->
+      <div id="signup-buttons" class="auth-buttons" style="display: none;">
+        <button id="btn-confirm-signup" class="btn-primary">Confirm Creation</button>
+        <button id="btn-show-login" class="btn-secondary">Back to Sign In</button>
+      </div>
+
     </div>
   </div>
 
@@ -82,7 +93,6 @@
     </div>
   </div>
 
-  <!-- Link your custom logic -->
   <script src="/app.js"></script>
 </body>
 </html>
