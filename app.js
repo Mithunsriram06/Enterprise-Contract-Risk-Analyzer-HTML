@@ -1,52 +1,63 @@
-// Add your Supabase credentials here (These are safe to be public in frontend code)
+
 const SUPABASE_URL = 'https://iuhmiygcmtguwlrhidfm.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qANoQ2H_0Rzri2ZZj9lqDQ_-tLyn7pR';
 
 
 let supabaseClient;
 try {
-  // Use window.supabase (from the CDN) to create our local supabaseClient
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (err) {
-  console.error("Supabase Initialization Failed. Did you enter your keys?", err);
+  console.error("Supabase Initialization Failed.", err);
 }
 
-// Setup PDF.js worker
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-// DOM Elements
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
 const authError = document.getElementById('auth-error');
 const fileUpload = document.getElementById('file-upload');
 const btnAnalyze = document.getElementById('btn-analyze');
 
-// Auth UI Toggle Elements
-const dobInput = document.getElementById('dob');
-const loginButtons = document.getElementById('login-buttons');
-const signupButtons = document.getElementById('signup-buttons');
-const authSubtitle = document.getElementById('auth-subtitle');
-
-// Toggle to Sign Up Mode
+// Auth Toggles
 document.getElementById('btn-show-signup').addEventListener('click', () => {
-  dobInput.style.display = 'block';
-  loginButtons.style.display = 'none';
-  signupButtons.style.display = 'flex';
-  authSubtitle.innerText = "Create a secure account to begin analysing your contracts.";
+  document.getElementById('dob').style.display = 'block';
+  document.getElementById('login-buttons').style.display = 'none';
+  document.getElementById('signup-buttons').style.display = 'flex';
+  document.getElementById('auth-subtitle').innerText = "Create a secure account to begin analysing your contracts.";
   authError.style.display = 'none';
 });
 
-// Toggle to Login Mode
 document.getElementById('btn-show-login').addEventListener('click', () => {
-  dobInput.style.display = 'none';
-  loginButtons.style.display = 'flex';
-  signupButtons.style.display = 'none';
-  authSubtitle.innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
+  document.getElementById('dob').style.display = 'none';
+  document.getElementById('login-buttons').style.display = 'flex';
+  document.getElementById('signup-buttons').style.display = 'none';
+  document.getElementById('auth-subtitle').innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
   authError.style.display = 'none';
 });
 
-// Handle Authentication State
+// Navigation Toggles
+const viewNew = document.getElementById('new-analysis-view');
+const viewHistory = document.getElementById('history-view');
+const navNew = document.getElementById('nav-new');
+const navHistory = document.getElementById('nav-history');
+
+navNew.addEventListener('click', () => {
+  viewNew.style.display = 'block';
+  viewHistory.style.display = 'none';
+  navNew.className = 'btn-primary';
+  navHistory.className = 'btn-secondary';
+});
+
+navHistory.addEventListener('click', () => {
+  viewNew.style.display = 'none';
+  viewHistory.style.display = 'block';
+  navNew.className = 'btn-secondary';
+  navHistory.className = 'btn-primary';
+  loadHistory(); // Fetch records when tab is clicked
+});
+
+// Check Session
 async function checkUser() {
   if (!supabaseClient) return;
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -61,66 +72,38 @@ async function checkUser() {
 }
 checkUser(); 
 
-// Execute Login
+// Auth Actions
 document.getElementById('btn-login').addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  
-  if (!email || !password) {
-    authError.innerText = "Please enter both email and password.";
-    authError.style.display = 'block';
-    return;
-  }
-
+  if (!email || !password) return (authError.innerText = "Please enter email and password.", authError.style.display = 'block');
   const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
   else { authError.style.display = 'none'; checkUser(); }
 });
 
-// Execute Confirm Creation (Signup)
 document.getElementById('btn-confirm-signup').addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const dob = document.getElementById('dob').value;
-  
-  if (!email || !password || !dob) {
-    authError.innerText = "Please complete all fields, including Date of Birth.";
-    authError.style.display = 'block';
-    return;
-  }
-
-  // Pass the DOB into Supabase's user metadata
-  const { error } = await supabaseClient.auth.signUp({ 
-    email, 
-    password,
-    options: { data: { date_of_birth: dob } }
-  });
-
-  if (error) { 
-    authError.innerText = error.message; 
-    authError.style.display = 'block'; 
-  } else { 
-    alert("Account created successfully! You can now sign in.");
-    document.getElementById('btn-show-login').click(); // Switch back to login view
-  }
+  if (!email || !password || !dob) return (authError.innerText = "Please complete all fields.", authError.style.display = 'block');
+  const { error } = await supabaseClient.auth.signUp({ email, password, options: { data: { date_of_birth: dob } } });
+  if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
+  else { alert("Account created!"); document.getElementById('btn-show-login').click(); }
 });
 
-// Execute Logout
 document.getElementById('btn-logout').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
   checkUser();
 });
 
-// File Upload Enable
-fileUpload.addEventListener('change', () => {
-  btnAnalyze.disabled = fileUpload.files.length === 0;
-});
+// File Upload
+fileUpload.addEventListener('change', () => { btnAnalyze.disabled = fileUpload.files.length === 0; });
 
-// Run AI Analysis
+// Analysis Execution
 btnAnalyze.addEventListener('click', async () => {
   const file = fileUpload.files[0];
   if (!file) return;
-
   document.getElementById('loading-spinner').style.display = 'block';
   document.getElementById('results-dashboard').style.display = 'none';
   btnAnalyze.disabled = true;
@@ -154,7 +137,6 @@ btnAnalyze.addEventListener('click', async () => {
     ]);
 
     renderDashboard(aiData, file.name);
-
   } catch (error) {
     alert("Error analysing document: " + error.message);
   } finally {
@@ -163,45 +145,68 @@ btnAnalyze.addEventListener('click', async () => {
   }
 });
 
-// Render Results to UI
 function renderDashboard(data, fileName) {
   document.getElementById('results-dashboard').style.display = 'block';
   document.getElementById('doc-title').innerText = `Evaluation: ${fileName}`;
-  
   document.getElementById('score-val').innerText = `${data.overall_risk_score} / 100`;
   document.getElementById('score-val').style.color = data.overall_risk_score >= 70 ? '#ff4b4b' : data.overall_risk_score >= 40 ? '#ffa700' : '#21c55d';
   
-  const high = data.risks.filter(r => r.severity.toLowerCase() === 'high').length;
-  const med = data.risks.filter(r => r.severity.toLowerCase() === 'medium').length;
-  const low = data.risks.filter(r => r.severity.toLowerCase() === 'low').length;
-  
-  document.getElementById('high-val').innerText = high;
-  document.getElementById('med-val').innerText = med;
-  document.getElementById('low-val').innerText = low;
+  document.getElementById('high-val').innerText = data.risks.filter(r => r.severity.toLowerCase() === 'high').length;
+  document.getElementById('med-val').innerText = data.risks.filter(r => r.severity.toLowerCase() === 'medium').length;
+  document.getElementById('low-val').innerText = data.risks.filter(r => r.severity.toLowerCase() === 'low').length;
   document.getElementById('summary-text').innerText = data.summary;
 
   const container = document.getElementById('clauses-container');
   container.innerHTML = ''; 
-
   data.risks.forEach(risk => {
-    const box = document.createElement('div');
-    box.className = 'clause-box';
-    box.innerHTML = `
-      <h3>${risk.clause_name}</h3>
-      <span class="badge ${risk.severity.toLowerCase()}">${risk.severity.toUpperCase()} RISK</span>
-      <div class="clause-grid">
-        <div>
-          <strong>Extracted Contract Language</strong>
-          <div class="risk-text">${risk.extracted_text}</div>
-          <br><strong>Risk Explanation</strong>
-          <p>${risk.risk_explanation}</p>
+    container.innerHTML += `
+      <div class="clause-box">
+        <h3>${risk.clause_name}</h3>
+        <span class="badge ${risk.severity.toLowerCase()}">${risk.severity.toUpperCase()} RISK</span>
+        <div class="clause-grid">
+          <div><strong>Extracted Contract Language</strong><div class="risk-text">${risk.extracted_text}</div><br><strong>Risk Explanation</strong><p>${risk.risk_explanation}</p></div>
+          <div><strong>Recommended Safe Revision</strong><div class="safe-text">${risk.revised_text}</div></div>
         </div>
-        <div>
-          <strong>Recommended Safe Revision</strong>
-          <div class="safe-text">${risk.revised_text}</div>
-        </div>
-      </div>
-    `;
-    container.appendChild(box);
+      </div>`;
   });
 }
+
+// History Fetching
+async function loadHistory() {
+  const container = document.getElementById('history-container');
+  const loader = document.getElementById('history-loading');
+  container.innerHTML = '';
+  loader.style.display = 'block';
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const { data, error } = await supabaseClient
+    .from('contract_logs')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order('created_at', { ascending: false });
+
+  loader.style.display = 'none';
+
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<div class="info-box">No past audits found in your archive.</div>';
+    return;
+  }
+
+  data.forEach(log => {
+    const date = new Date(log.created_at).toLocaleDateString();
+    container.innerHTML += `
+      <div class="clause-box" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 style="margin:0 0 5px 0;">${log.document_name}</h3>
+          <span style="color: #8b949e; font-size: 0.85rem;">Date: ${date} | Score: ${log.risk_score}/100</span>
+        </div>
+        <button class="btn-primary" style="width: auto;" onclick='restoreAudit(${JSON.stringify(log.analysis_payload).replace(/'/g, "&apos;")}, "${log.document_name}")'>Load Dashboard</button>
+      </div>`;
+  });
+}
+
+// Global function to restore audit from history
+window.restoreAudit = function(payload, fileName) {
+  navNew.click(); // Switch back to main view
+  renderDashboard(payload, fileName);
+};
