@@ -2,9 +2,11 @@
 const SUPABASE_URL = 'https://iuhmiygcmtguwlrhidfm.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qANoQ2H_0Rzri2ZZj9lqDQ_-tLyn7pR';
 
-let supabase;
+
+let supabaseClient;
 try {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Use window.supabase (from the CDN) to create our local supabaseClient
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (err) {
   console.error("Supabase Initialization Failed. Did you enter your keys?", err);
 }
@@ -46,8 +48,8 @@ document.getElementById('btn-show-login').addEventListener('click', () => {
 
 // Handle Authentication State
 async function checkUser() {
-  if (!supabase) return;
-  const { data: { session } } = await supabase.auth.getSession();
+  if (!supabaseClient) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
     authContainer.style.display = 'none';
     appContainer.style.display = 'flex';
@@ -70,7 +72,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     return;
   }
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
   else { authError.style.display = 'none'; checkUser(); }
 });
@@ -88,7 +90,7 @@ document.getElementById('btn-confirm-signup').addEventListener('click', async ()
   }
 
   // Pass the DOB into Supabase's user metadata
-  const { error } = await supabase.auth.signUp({ 
+  const { error } = await supabaseClient.auth.signUp({ 
     email, 
     password,
     options: { data: { date_of_birth: dob } }
@@ -105,7 +107,7 @@ document.getElementById('btn-confirm-signup').addEventListener('click', async ()
 
 // Execute Logout
 document.getElementById('btn-logout').addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   checkUser();
 });
 
@@ -146,8 +148,8 @@ btnAnalyze.addEventListener('click', async () => {
     if (!response.ok) throw new Error("API Bridge failed.");
     const aiData = await response.json();
     
-    const { data: { session } } = await supabase.auth.getSession();
-    await supabase.from('contract_logs').insert([
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    await supabaseClient.from('contract_logs').insert([
       { user_id: session.user.id, document_name: file.name, risk_score: aiData.overall_risk_score, analysis_payload: aiData }
     ]);
 
