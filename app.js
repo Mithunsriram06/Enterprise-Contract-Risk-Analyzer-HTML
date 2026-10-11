@@ -2,7 +2,12 @@
 const SUPABASE_URL = 'https://iuhmiygcmtguwlrhidfm.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qANoQ2H_0Rzri2ZZj9lqDQ_-tLyn7pR';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase;
+try {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (err) {
+  console.error("Supabase Initialization Failed. Did you enter your keys?", err);
+}
 
 // Setup PDF.js worker
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -15,8 +20,33 @@ const authError = document.getElementById('auth-error');
 const fileUpload = document.getElementById('file-upload');
 const btnAnalyze = document.getElementById('btn-analyze');
 
+// Auth UI Toggle Elements
+const dobInput = document.getElementById('dob');
+const loginButtons = document.getElementById('login-buttons');
+const signupButtons = document.getElementById('signup-buttons');
+const authSubtitle = document.getElementById('auth-subtitle');
+
+// Toggle to Sign Up Mode
+document.getElementById('btn-show-signup').addEventListener('click', () => {
+  dobInput.style.display = 'block';
+  loginButtons.style.display = 'none';
+  signupButtons.style.display = 'flex';
+  authSubtitle.innerText = "Create a secure account to begin analysing your contracts.";
+  authError.style.display = 'none';
+});
+
+// Toggle to Login Mode
+document.getElementById('btn-show-login').addEventListener('click', () => {
+  dobInput.style.display = 'none';
+  loginButtons.style.display = 'flex';
+  signupButtons.style.display = 'none';
+  authSubtitle.innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
+  authError.style.display = 'none';
+});
+
 // Handle Authentication State
 async function checkUser() {
+  if (!supabase) return;
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
     authContainer.style.display = 'none';
@@ -27,25 +57,53 @@ async function checkUser() {
     appContainer.style.display = 'none';
   }
 }
-checkUser(); // Run on page load
+checkUser(); 
 
-// Auth Buttons
+// Execute Login
 document.getElementById('btn-login').addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
+  
+  if (!email || !password) {
+    authError.innerText = "Please enter both email and password.";
+    authError.style.display = 'block';
+    return;
+  }
+
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
   else { authError.style.display = 'none'; checkUser(); }
 });
 
-document.getElementById('btn-signup').addEventListener('click', async () => {
+// Execute Confirm Creation (Signup)
+document.getElementById('btn-confirm-signup').addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
-  else { alert("Signup successful! Please log in."); }
+  const dob = document.getElementById('dob').value;
+  
+  if (!email || !password || !dob) {
+    authError.innerText = "Please complete all fields, including Date of Birth.";
+    authError.style.display = 'block';
+    return;
+  }
+
+  // Pass the DOB into Supabase's user metadata
+  const { error } = await supabase.auth.signUp({ 
+    email, 
+    password,
+    options: { data: { date_of_birth: dob } }
+  });
+
+  if (error) { 
+    authError.innerText = error.message; 
+    authError.style.display = 'block'; 
+  } else { 
+    alert("Account created successfully! You can now sign in.");
+    document.getElementById('btn-show-login').click(); // Switch back to login view
+  }
 });
 
+// Execute Logout
 document.getElementById('btn-logout').addEventListener('click', async () => {
   await supabase.auth.signOut();
   checkUser();
@@ -67,7 +125,6 @@ btnAnalyze.addEventListener('click', async () => {
 
   try {
     let contractText = '';
-    // Extract text based on file type
     if (file.name.endsWith('.txt')) {
       contractText = await file.text();
     } else if (file.name.endsWith('.pdf')) {
@@ -80,7 +137,6 @@ btnAnalyze.addEventListener('click', async () => {
       }
     }
 
-    // Call secure Vercel API Bridge
     const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -90,7 +146,6 @@ btnAnalyze.addEventListener('click', async () => {
     if (!response.ok) throw new Error("API Bridge failed.");
     const aiData = await response.json();
     
-    // Save to Supabase (Database Log)
     const { data: { session } } = await supabase.auth.getSession();
     await supabase.from('contract_logs').insert([
       { user_id: session.user.id, document_name: file.name, risk_score: aiData.overall_risk_score, analysis_payload: aiData }
@@ -124,7 +179,7 @@ function renderDashboard(data, fileName) {
   document.getElementById('summary-text').innerText = data.summary;
 
   const container = document.getElementById('clauses-container');
-  container.innerHTML = ''; // clear old
+  container.innerHTML = ''; 
 
   data.risks.forEach(risk => {
     const box = document.createElement('div');
