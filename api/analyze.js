@@ -20,20 +20,16 @@ Return ONLY a valid JSON object. Do not include any markdown fences or explanati
 }`;
 
 module.exports = async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  
   const { contractText } = req.body;
-
   if (!contractText || contractText.trim() === "") {
     return res.status(400).json({ error: "No contract text provided." });
   }
 
   try {
-    // Initialize Gemini using the secure environment variable
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `${SYSTEM_PROMPT}\n\n---CONTRACT TEXT START---\n${contractText.substring(0, 50000)}\n---CONTRACT TEXT END---`;
 
@@ -46,9 +42,7 @@ module.exports = async function handler(req, res) {
       },
     });
 
-    const responseText = result.response.text();
-    const data = JSON.parse(responseText);
-
+    const data = JSON.parse(result.response.text());
     return res.status(200).json(data);
   } catch (error) {
     console.error("Gemini API Error:", error);

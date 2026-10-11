@@ -1,108 +1,172 @@
-
+// Add your Supabase credentials here (These are safe to be public in frontend code)
 const SUPABASE_URL = 'https://iuhmiygcmtguwlrhidfm.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qANoQ2H_0Rzri2ZZj9lqDQ_-tLyn7pR';
-
 
 
 let supabaseClient;
 try {
   // Use sessionStorage so the user is logged out when the tab closes
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      storage: window.sessionStorage
-    }
+    auth: { storage: window.sessionStorage }
   });
 } catch (err) {
-  console.error("Supabase Initialization Failed. Did you enter your keys?", err);
+  console.error("Supabase Initialization Failed.", err);
 }
-
-// ... Keep the rest of your app.js exactly the same below this point ...
-
 
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
+// DOM Elements
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
-const authError = document.getElementById('auth-error');
 const fileUpload = document.getElementById('file-upload');
 const btnAnalyze = document.getElementById('btn-analyze');
 
-// Auth Toggles
-document.getElementById('btn-show-signup').addEventListener('click', () => {
-  document.getElementById('dob').style.display = 'block';
-  document.getElementById('login-buttons').style.display = 'none';
-  document.getElementById('signup-buttons').style.display = 'flex';
-  document.getElementById('auth-subtitle').innerText = "Create a secure account to begin analysing your contracts.";
-  authError.style.display = 'none';
-});
+// Auth UI Elements
+const emailInput = document.getElementById('email');
+const passInput = document.getElementById('password');
+const dobInput = document.getElementById('dob');
+const newPassInput = document.getElementById('new-password');
 
-document.getElementById('btn-show-login').addEventListener('click', () => {
-  document.getElementById('dob').style.display = 'none';
-  document.getElementById('login-buttons').style.display = 'flex';
-  document.getElementById('signup-buttons').style.display = 'none';
-  document.getElementById('auth-subtitle').innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
-  authError.style.display = 'none';
-});
-// Toggle to Forgot Password Mode
-document.getElementById('btn-show-reset').addEventListener('click', () => {
-  document.getElementById('password').style.display = 'none';
-  document.getElementById('dob').style.display = 'block';
-  document.getElementById('new-password').style.display = 'block';
-  
-  document.getElementById('login-buttons').style.display = 'none';
-  document.getElementById('signup-buttons').style.display = 'none';
-  document.getElementById('reset-buttons').style.display = 'flex';
-  
-  document.getElementById('auth-subtitle').innerText = "Enter your email and Date of Birth to reset your password.";
-  authError.style.display = 'none';
-});
+const loginBtns = document.getElementById('login-buttons');
+const signupBtns = document.getElementById('signup-buttons');
+const verifyBtns = document.getElementById('verify-buttons');
+const savePassBtns = document.getElementById('save-password-buttons');
+const authSubtitle = document.getElementById('auth-subtitle');
+const authError = document.getElementById('auth-error');
 
-// Reusable Back to Login function
+// Reusable function to reset the UI back to the default Login state
 const resetToLogin = () => {
-  document.getElementById('password').style.display = 'block';
-  document.getElementById('dob').style.display = 'none';
-  document.getElementById('new-password').style.display = 'none';
+  passInput.style.display = 'block';
+  dobInput.style.display = 'none';
+  newPassInput.style.display = 'none';
   
-  document.getElementById('login-buttons').style.display = 'flex';
-  document.getElementById('signup-buttons').style.display = 'none';
-  document.getElementById('reset-buttons').style.display = 'none';
+  loginBtns.style.display = 'flex';
+  signupBtns.style.display = 'none';
+  verifyBtns.style.display = 'none';
+  savePassBtns.style.display = 'none';
   
-  document.getElementById('auth-subtitle').innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
+  authSubtitle.innerText = "Sign in to audit your commercial contracts for legal vulnerabilities instantly.";
   authError.style.display = 'none';
+  
+  emailInput.value = '';
+  passInput.value = '';
+  dobInput.value = '';
+  newPassInput.value = '';
 };
 
-document.getElementById('btn-back-login1').addEventListener('click', resetToLogin);
-document.getElementById('btn-back-login2').addEventListener('click', resetToLogin);
+// Bind "Back to Sign In" buttons
+document.getElementById('btn-back-login-signup').addEventListener('click', resetToLogin);
+document.getElementById('btn-back-login-reset').addEventListener('click', resetToLogin);
 
-// Execute Confirm Password Reset
-document.getElementById('btn-confirm-reset').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const dob = document.getElementById('dob').value;
-  const newPassword = document.getElementById('new-password').value;
-  
-  if (!email || !dob || !newPassword) {
-    authError.innerText = "Please complete all fields to reset your password.";
-    authError.style.display = 'block';
-    return;
+// Go to Sign Up View
+document.getElementById('btn-show-signup').addEventListener('click', () => {
+  passInput.style.display = 'block';
+  dobInput.style.display = 'block';
+  newPassInput.style.display = 'none';
+  loginBtns.style.display = 'none';
+  signupBtns.style.display = 'flex';
+  authSubtitle.innerText = "Create a secure account (Requires Date of Birth for recovery).";
+  authError.style.display = 'none';
+});
+
+// Go to Forgot Password (Verify) View
+document.getElementById('btn-show-reset').addEventListener('click', () => {
+  passInput.style.display = 'none';
+  dobInput.style.display = 'block';
+  newPassInput.style.display = 'none';
+  loginBtns.style.display = 'none';
+  verifyBtns.style.display = 'flex';
+  authSubtitle.innerText = "Enter your Email and Date of Birth to verify your identity.";
+  authError.style.display = 'none';
+});
+
+// Check Session on Load
+async function checkUser() {
+  if (!supabaseClient) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    authContainer.style.display = 'none';
+    appContainer.style.display = 'flex';
+    document.getElementById('user-email').innerText = session.user.email;
+  } else {
+    authContainer.style.display = 'flex';
+    appContainer.style.display = 'none';
   }
+}
+checkUser(); 
 
-  // Call the Vercel Admin API Bridge
-  const response = await fetch('/api/reset', {
+// Handle Login
+document.getElementById('btn-login').addEventListener('click', async () => {
+  if (!emailInput.value || !passInput.value) return (authError.innerText = "Enter email and password.", authError.style.display = 'block');
+  const { error } = await supabaseClient.auth.signInWithPassword({ email: emailInput.value, password: passInput.value });
+  if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
+  else { authError.style.display = 'none'; checkUser(); }
+});
+
+// Handle Account Creation
+document.getElementById('btn-confirm-signup').addEventListener('click', async () => {
+  if (!emailInput.value || !passInput.value || !dobInput.value) return (authError.innerText = "Complete all fields.", authError.style.display = 'block');
+  const { error } = await supabaseClient.auth.signUp({ 
+    email: emailInput.value, 
+    password: passInput.value, 
+    options: { data: { date_of_birth: dobInput.value } } 
+  });
+  if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
+  else { alert("Account created! Please log in."); resetToLogin(); }
+});
+
+// Handle Step 1: Verify DOB for Forgot Password
+document.getElementById('btn-verify-dob').addEventListener('click', async () => {
+  if (!emailInput.value || !dobInput.value) return (authError.innerText = "Enter Email and Date of Birth.", authError.style.display = 'block');
+  
+  const res = await fetch('/api/verify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, dob, newPassword })
+    body: JSON.stringify({ email: emailInput.value, dob: dobInput.value })
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
+  
+  const data = await res.json();
+  if (!res.ok) {
     authError.innerText = data.error;
     authError.style.display = 'block';
   } else {
-    alert("Password reset successfully! You can now sign in with your new password.");
-    resetToLogin();
+    authError.style.display = 'none';
+    dobInput.style.display = 'none';
+    emailInput.style.display = 'none';
+    newPassInput.style.display = 'block';
+    
+    verifyBtns.style.display = 'none';
+    savePassBtns.style.display = 'flex';
+    authSubtitle.innerText = "Identity verified. Enter your new password below.";
   }
+});
+
+// Handle Step 2: Save New Password & Auto-Login
+document.getElementById('btn-save-password').addEventListener('click', async () => {
+  if (!newPassInput.value) return (authError.innerText = "Enter a new password.", authError.style.display = 'block');
+  
+  const res = await fetch('/api/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: emailInput.value, dob: dobInput.value, newPassword: newPassInput.value })
+  });
+  
+  const data = await res.json();
+  if (!res.ok) {
+    authError.innerText = data.error;
+    authError.style.display = 'block';
+  } else {
+    await supabaseClient.auth.signInWithPassword({ email: emailInput.value, password: newPassInput.value });
+    checkUser();
+  }
+});
+
+// Handle Logout
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  resetToLogin();
+  checkUser();
 });
 
 // Navigation Toggles
@@ -123,50 +187,10 @@ navHistory.addEventListener('click', () => {
   viewHistory.style.display = 'block';
   navNew.className = 'btn-secondary';
   navHistory.className = 'btn-primary';
-  loadHistory(); // Fetch records when tab is clicked
+  loadHistory();
 });
 
-// Check Session
-async function checkUser() {
-  if (!supabaseClient) return;
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) {
-    authContainer.style.display = 'none';
-    appContainer.style.display = 'flex';
-    document.getElementById('user-email').innerText = session.user.email;
-  } else {
-    authContainer.style.display = 'flex';
-    appContainer.style.display = 'none';
-  }
-}
-checkUser(); 
-
-// Auth Actions
-document.getElementById('btn-login').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  if (!email || !password) return (authError.innerText = "Please enter email and password.", authError.style.display = 'block');
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
-  else { authError.style.display = 'none'; checkUser(); }
-});
-
-document.getElementById('btn-confirm-signup').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const dob = document.getElementById('dob').value;
-  if (!email || !password || !dob) return (authError.innerText = "Please complete all fields.", authError.style.display = 'block');
-  const { error } = await supabaseClient.auth.signUp({ email, password, options: { data: { date_of_birth: dob } } });
-  if (error) { authError.innerText = error.message; authError.style.display = 'block'; }
-  else { alert("Account created!"); document.getElementById('btn-show-login').click(); }
-});
-
-document.getElementById('btn-logout').addEventListener('click', async () => {
-  await supabaseClient.auth.signOut();
-  checkUser();
-});
-
-// File Upload
+// File Upload Enable
 fileUpload.addEventListener('change', () => { btnAnalyze.disabled = fileUpload.files.length === 0; });
 
 // Analysis Execution
@@ -214,11 +238,12 @@ btnAnalyze.addEventListener('click', async () => {
   }
 });
 
+// Render Dashboard
 function renderDashboard(data, fileName) {
   document.getElementById('results-dashboard').style.display = 'block';
   document.getElementById('doc-title').innerText = `Evaluation: ${fileName}`;
   document.getElementById('score-val').innerText = `${data.overall_risk_score} / 100`;
-  document.getElementById('score-val').style.color = data.overall_risk_score >= 70 ? '#ff4b4b' : data.overall_risk_score >= 40 ? '#ffa700' : '#21c55d';
+  document.getElementById('score-val').style.color = data.overall_risk_score >= 70 ? '#cc0000' : data.overall_risk_score >= 40 ? '#ff9900' : '#009933';
   
   document.getElementById('high-val').innerText = data.risks.filter(r => r.severity.toLowerCase() === 'high').length;
   document.getElementById('med-val').innerText = data.risks.filter(r => r.severity.toLowerCase() === 'medium').length;
@@ -267,15 +292,15 @@ async function loadHistory() {
       <div class="clause-box" style="display: flex; justify-content: space-between; align-items: center;">
         <div>
           <h3 style="margin:0 0 5px 0;">${log.document_name}</h3>
-          <span style="color: #8b949e; font-size: 0.85rem;">Date: ${date} | Score: ${log.risk_score}/100</span>
+          <span style="color: #666; font-size: 14px;">Date: ${date} | Score: ${log.risk_score}/100</span>
         </div>
-        <button class="btn-primary" style="width: auto;" onclick='restoreAudit(${JSON.stringify(log.analysis_payload).replace(/'/g, "&apos;")}, "${log.document_name}")'>Load Dashboard</button>
+        <button class="btn-primary" style="width: auto; margin-bottom: 0;" onclick='restoreAudit(${JSON.stringify(log.analysis_payload).replace(/'/g, "&apos;")}, "${log.document_name}")'>Load Dashboard</button>
       </div>`;
   });
 }
 
-// Global function to restore audit from history
+// Restore History Item to View
 window.restoreAudit = function(payload, fileName) {
-  navNew.click(); // Switch back to main view
+  navNew.click(); 
   renderDashboard(payload, fileName);
 };

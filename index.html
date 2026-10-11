@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enterprise Contract Risk Analyzer</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Unblocked CDNs -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 </head>
@@ -22,7 +24,7 @@
       <input type="email" id="email" placeholder="Corporate Email Address">
       <input type="password" id="password" placeholder="Security Access Code">
       <input type="date" id="dob" style="display: none;" title="Date of Birth">
-      <input type="password" id="new-password" placeholder="New Password" style="display: none;">
+      <input type="password" id="new-password" placeholder="Enter New Password" style="display: none;">
       
       <div id="login-buttons" class="auth-buttons">
         <button id="btn-login" class="btn-primary">Sign In</button>
@@ -32,12 +34,16 @@
 
       <div id="signup-buttons" class="auth-buttons" style="display: none;">
         <button id="btn-confirm-signup" class="btn-primary">Confirm Creation</button>
-        <button id="btn-back-login1" class="btn-secondary">Back to Sign In</button>
+        <button id="btn-back-login-signup" class="btn-secondary">Back to Sign In</button>
       </div>
 
-      <div id="reset-buttons" class="auth-buttons" style="display: none;">
-        <button id="btn-confirm-reset" class="btn-primary">Reset Password</button>
-        <button id="btn-back-login2" class="btn-secondary">Back to Sign In</button>
+      <div id="verify-buttons" class="auth-buttons" style="display: none;">
+        <button id="btn-verify-dob" class="btn-primary">Verify Account</button>
+        <button id="btn-back-login-reset" class="btn-secondary">Back to Sign In</button>
+      </div>
+
+      <div id="save-password-buttons" class="auth-buttons" style="display: none;">
+        <button id="btn-save-password" class="btn-primary">Save Password & Enter</button>
       </div>
     </div>
   </div>
@@ -51,7 +57,6 @@
         <code id="user-email"></code>
       </div>
       
-      <!-- NAVIGATION -->
       <div class="nav-menu" style="margin-top: 30px; margin-bottom: 30px;">
         <button id="nav-new" class="btn-primary" style="margin-bottom: 10px;">New Analysis</button>
         <button id="nav-history" class="btn-secondary" style="margin-bottom: 10px;">Past Audits</button>
@@ -74,7 +79,7 @@
           <button id="btn-analyze" class="btn-primary" disabled>Run Risk Analysis</button>
         </div>
         
-        <div id="loading-spinner" style="display: none; margin-top: 20px; color: #a78bfa;">
+        <div id="loading-spinner" style="display: none; margin-top: 20px; color: #0066cc;">
           Processing document and running AI compliance audit...
         </div>
 
@@ -100,13 +105,13 @@
           <h1>Audit Archive</h1>
           <p>Review previously computed document parameters stored in your profile configuration index.</p>
         </div>
-        <div id="history-loading" style="display: none; color: #a78bfa;">Fetching records...</div>
+        <div id="history-loading" style="display: none; color: #0066cc;">Fetching records...</div>
         <div id="history-container"></div>
       </div>
 
     </div>
   </div>
 
-  <script src="/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
