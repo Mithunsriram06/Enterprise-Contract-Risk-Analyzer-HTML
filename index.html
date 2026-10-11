@@ -22,15 +22,22 @@
       <input type="email" id="email" placeholder="Corporate Email Address">
       <input type="password" id="password" placeholder="Security Access Code">
       <input type="date" id="dob" style="display: none;" title="Date of Birth">
+      <input type="password" id="new-password" placeholder="New Password" style="display: none;">
       
       <div id="login-buttons" class="auth-buttons">
         <button id="btn-login" class="btn-primary">Sign In</button>
         <button id="btn-show-signup" class="btn-secondary">Create Account</button>
+        <button id="btn-show-reset" style="background: none; border: none; color: #0066cc; font-size: 14px; margin-top: 10px;">Forgot Password?</button>
       </div>
 
       <div id="signup-buttons" class="auth-buttons" style="display: none;">
         <button id="btn-confirm-signup" class="btn-primary">Confirm Creation</button>
-        <button id="btn-show-login" class="btn-secondary">Back to Sign In</button>
+        <button id="btn-back-login1" class="btn-secondary">Back to Sign In</button>
+      </div>
+
+      <div id="reset-buttons" class="auth-buttons" style="display: none;">
+        <button id="btn-confirm-reset" class="btn-primary">Reset Password</button>
+        <button id="btn-back-login2" class="btn-secondary">Back to Sign In</button>
       </div>
     </div>
   </div>
