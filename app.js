@@ -3,12 +3,21 @@ const SUPABASE_URL = 'https://iuhmiygcmtguwlrhidfm.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_qANoQ2H_0Rzri2ZZj9lqDQ_-tLyn7pR';
 
 
+
 let supabaseClient;
 try {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Use sessionStorage so the user is logged out when the tab closes
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      storage: window.sessionStorage
+    }
+  });
 } catch (err) {
-  console.error("Supabase Initialization Failed.", err);
+  console.error("Supabase Initialization Failed. Did you enter your keys?", err);
 }
+
+// ... Keep the rest of your app.js exactly the same below this point ...
+
 
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
