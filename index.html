@@ -6,7 +6,6 @@
   <title>Enterprise Contract Risk Analyzer</title>
   <link rel="stylesheet" href="style.css">
   
-  <!-- Unblocked CDNs -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 </head>
@@ -50,24 +49,25 @@
 
   <!-- MAIN APP DASHBOARD -->
   <div id="app-container" class="app-screen" style="display: none;">
-    <div class="sidebar">
-      <h2>Workstation Portal</h2>
-      <div class="user-info">
-        <span>Session Verified:</span>
-        <code id="user-email"></code>
-      </div>
+    
+    <!-- TOP NAVIGATION BAR -->
+    <div class="top-nav">
+      <div class="nav-title">Contract Risk Analyzer</div>
       
-      <div class="nav-menu" style="margin-top: 30px; margin-bottom: 30px;">
-        <button id="nav-new" class="btn-primary" style="margin-bottom: 10px;">New Analysis</button>
-        <button id="nav-history" class="btn-secondary" style="margin-bottom: 10px;">Past Audits</button>
+      <div class="nav-menu">
+        <button id="nav-new" class="nav-btn active">New Analysis</button>
+        <button id="nav-history" class="nav-btn">Past Audits</button>
       </div>
 
-      <button id="btn-logout" class="btn-secondary" style="width: 100%;">Terminate Session</button>
+      <div class="nav-user">
+        <code id="user-email"></code>
+        <button id="btn-logout" class="btn-secondary">Terminate Session</button>
+      </div>
     </div>
 
     <div class="main-content">
       
-      <!-- NEW ANALYSIS VIEW -->
+      <!-- NEW ANALYSIS UPLOAD SECTION -->
       <div id="new-analysis-view">
         <div class="header">
           <h1>New Contract Analysis</h1>
@@ -82,24 +82,24 @@
         <div id="loading-spinner" style="display: none; margin-top: 20px; color: #0066cc;">
           Processing document and running AI compliance audit...
         </div>
-
-        <div id="results-dashboard" style="display: none; margin-top: 40px;">
-          <hr>
-          <h2 id="doc-title"></h2>
-          <div class="metrics-grid">
-            <div class="metric-card"><label>Overall Risk Score</label><div id="score-val" class="metric-value">0 / 100</div></div>
-            <div class="metric-card"><label>High Severity</label><div id="high-val" class="metric-value">0</div></div>
-            <div class="metric-card"><label>Medium Severity</label><div id="med-val" class="metric-value">0</div></div>
-            <div class="metric-card"><label>Low Severity</label><div id="low-val" class="metric-value">0</div></div>
-          </div>
-          <h3>Executive Summary</h3>
-          <div class="info-box" id="summary-text"></div>
-          <h3>Identified Risk Clauses & Revisions</h3>
-          <div id="clauses-container"></div>
-        </div>
       </div>
 
-      <!-- PAST AUDITS VIEW -->
+      <!-- RESULTS DASHBOARD (Used for both New and Past Audits) -->
+      <div id="results-dashboard" style="display: none;">
+        <h2 id="doc-title"></h2>
+        <div class="metrics-grid">
+          <div class="metric-card"><label>Overall Risk Score</label><div id="score-val" class="metric-value">0 / 100</div></div>
+          <div class="metric-card"><label>High Severity</label><div id="high-val" class="metric-value">0</div></div>
+          <div class="metric-card"><label>Medium Severity</label><div id="med-val" class="metric-value">0</div></div>
+          <div class="metric-card"><label>Low Severity</label><div id="low-val" class="metric-value">0</div></div>
+        </div>
+        <h3>Executive Summary</h3>
+        <div class="info-box" id="summary-text"></div>
+        <h3>Identified Risk Clauses & Revisions</h3>
+        <div id="clauses-container"></div>
+      </div>
+
+      <!-- PAST AUDITS LIST VIEW -->
       <div id="history-view" style="display: none;">
         <div class="header">
           <h1>Audit Archive</h1>

@@ -41,17 +41,34 @@ button {
 .pill-badge { background: #e6f2ff; color: #0066cc; padding: 5px 10px; border-radius: 20px; font-size: 12px; margin-bottom: 15px; display: inline-block; border: 1px solid #b3d9ff; }
 .error-msg { background: #ffe6e6; color: #cc0000; padding: 10px; border: 1px solid #ff9999; margin-bottom: 15px; border-radius: 4px; font-size: 14px;}
 
-/* MAIN APP */
-.app-screen { display: flex; min-height: 100vh; }
-.sidebar { width: 250px; background: #fff; border-right: 1px solid #ddd; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.02); }
-.sidebar code { display: block; background: #eee; padding: 5px; margin-top: 10px; border-radius: 4px; word-break: break-all; font-size: 14px;}
-.nav-menu button { width: 100%; text-align: left; margin-bottom: 10px; }
-.main-content { flex: 1; padding: 40px; max-width: 1000px; margin: 0 auto; }
+/* MAIN APP (Top Nav Layout) */
+.app-screen { display: block; min-height: 100vh; }
+
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 15px 30px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.nav-title { font-size: 20px; font-weight: bold; color: #111; }
+
+.nav-menu { display: flex; gap: 10px; }
+.nav-btn { background: #f4f6f8; color: #555; padding: 8px 16px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px; }
+.nav-btn.active { background: #0066cc; color: #fff; border-color: #0052a3; }
+
+.nav-user { display: flex; align-items: center; gap: 15px; }
+.nav-user code { background: #eee; padding: 6px 10px; border-radius: 4px; font-size: 13px; color: #555;}
+.nav-user .btn-secondary { font-size: 13px; padding: 6px 12px; margin: 0; }
+
+.main-content { padding: 40px; max-width: 1000px; margin: 0 auto; }
 
 /* DASHBOARD COMPONENTS */
 .upload-area { background: #fff; border: 2px dashed #aaa; padding: 30px; text-align: center; border-radius: 8px; margin-bottom: 20px; }
-hr { border: 0; border-top: 1px solid #ddd; margin: 30px 0; }
-.metrics-grid { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+.metrics-grid { display: flex; gap: 15px; margin-top: 20px; margin-bottom: 30px; flex-wrap: wrap; }
 .metric-card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 20px; flex: 1; text-align: center; min-width: 150px; }
 .metric-card label { font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase; }
 .metric-value { font-size: 28px; font-weight: bold; color: #222; margin-top: 10px; }
