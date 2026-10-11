@@ -6,7 +6,6 @@
   <title>Enterprise Contract Risk Analyzer</title>
   <link rel="stylesheet" href="/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Supabase & PDF.js Alternative CDNs (unpkg) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 </head>
@@ -23,26 +22,21 @@
       
       <input type="email" id="email" placeholder="Corporate Email Address">
       <input type="password" id="password" placeholder="Security Access Code">
-      
-      <!-- Hidden by default, shown only during Account Creation -->
       <input type="date" id="dob" style="display: none;" title="Date of Birth">
       
-      <!-- Login State Buttons -->
       <div id="login-buttons" class="auth-buttons">
         <button id="btn-login" class="btn-primary">Sign In</button>
         <button id="btn-show-signup" class="btn-secondary">Create Account</button>
       </div>
 
-      <!-- Signup State Buttons (Hidden by default) -->
       <div id="signup-buttons" class="auth-buttons" style="display: none;">
         <button id="btn-confirm-signup" class="btn-primary">Confirm Creation</button>
         <button id="btn-show-login" class="btn-secondary">Back to Sign In</button>
       </div>
-
     </div>
   </div>
 
-  <!-- MAIN APP DASHBOARD (Hidden by default) -->
+  <!-- MAIN APP DASHBOARD -->
   <div id="app-container" class="app-screen" style="display: none;">
     <div class="sidebar">
       <h2>Workstation Portal</h2>
@@ -50,45 +44,60 @@
         <span>Session Verified:</span>
         <code id="user-email"></code>
       </div>
-      <button id="btn-logout" class="btn-secondary" style="width: 100%; margin-top: 20px;">Terminate Session</button>
+      
+      <!-- NAVIGATION -->
+      <div class="nav-menu" style="margin-top: 30px; margin-bottom: 30px;">
+        <button id="nav-new" class="btn-primary" style="margin-bottom: 10px;">New Analysis</button>
+        <button id="nav-history" class="btn-secondary" style="margin-bottom: 10px;">Past Audits</button>
+      </div>
+
+      <button id="btn-logout" class="btn-secondary" style="width: 100%;">Terminate Session</button>
     </div>
 
     <div class="main-content">
-      <div class="header">
-        <h1>New Contract Analysis</h1>
-        <p>Upload a PDF or plain-text contract file to parse and analyse commercial risk.</p>
-      </div>
-
-      <div class="upload-area">
-        <input type="file" id="file-upload" accept=".pdf,.txt">
-        <button id="btn-analyze" class="btn-primary" disabled>Run Risk Analysis</button>
-      </div>
       
-      <div id="loading-spinner" style="display: none; margin-top: 20px; color: #a78bfa;">
-        Processing document and running AI compliance audit...
-      </div>
-
-      <!-- DASHBOARD RESULTS -->
-      <div id="results-dashboard" style="display: none; margin-top: 40px;">
-        <hr>
-        <h2 id="doc-title"></h2>
-        
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <label>Overall Risk Score</label>
-            <div id="score-val" class="metric-value">0 / 100</div>
-          </div>
-          <div class="metric-card"><label>High Severity</label><div id="high-val" class="metric-value">0</div></div>
-          <div class="metric-card"><label>Medium Severity</label><div id="med-val" class="metric-value">0</div></div>
-          <div class="metric-card"><label>Low Severity</label><div id="low-val" class="metric-value">0</div></div>
+      <!-- NEW ANALYSIS VIEW -->
+      <div id="new-analysis-view">
+        <div class="header">
+          <h1>New Contract Analysis</h1>
+          <p>Upload a PDF or plain-text contract file to parse and analyse commercial risk.</p>
         </div>
 
-        <h3>Executive Summary</h3>
-        <div class="info-box" id="summary-text"></div>
+        <div class="upload-area">
+          <input type="file" id="file-upload" accept=".pdf,.txt">
+          <button id="btn-analyze" class="btn-primary" disabled>Run Risk Analysis</button>
+        </div>
+        
+        <div id="loading-spinner" style="display: none; margin-top: 20px; color: #a78bfa;">
+          Processing document and running AI compliance audit...
+        </div>
 
-        <h3>Identified Risk Clauses & Revisions</h3>
-        <div id="clauses-container"></div>
+        <div id="results-dashboard" style="display: none; margin-top: 40px;">
+          <hr>
+          <h2 id="doc-title"></h2>
+          <div class="metrics-grid">
+            <div class="metric-card"><label>Overall Risk Score</label><div id="score-val" class="metric-value">0 / 100</div></div>
+            <div class="metric-card"><label>High Severity</label><div id="high-val" class="metric-value">0</div></div>
+            <div class="metric-card"><label>Medium Severity</label><div id="med-val" class="metric-value">0</div></div>
+            <div class="metric-card"><label>Low Severity</label><div id="low-val" class="metric-value">0</div></div>
+          </div>
+          <h3>Executive Summary</h3>
+          <div class="info-box" id="summary-text"></div>
+          <h3>Identified Risk Clauses & Revisions</h3>
+          <div id="clauses-container"></div>
+        </div>
       </div>
+
+      <!-- PAST AUDITS VIEW -->
+      <div id="history-view" style="display: none;">
+        <div class="header">
+          <h1>Audit Archive</h1>
+          <p>Review previously computed document parameters stored in your profile configuration index.</p>
+        </div>
+        <div id="history-loading" style="display: none; color: #a78bfa;">Fetching records...</div>
+        <div id="history-container"></div>
+      </div>
+
     </div>
   </div>
 
