@@ -56,3 +56,9 @@ hr { border: 0; border-top: 1px solid rgba(99,102,241,0.2); margin: 2rem 0; }
 .clause-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .risk-text { background: #1e1a1a; border-left: 3px solid #ff4b4b; padding: 1rem; font-size: 0.88rem; font-style: italic; border-radius: 4px; }
 .safe-text { background: #0d1f12; border-left: 3px solid #21c55d; padding: 1rem; font-size: 0.88rem; border-radius: 4px; }
+
+/* Fix for date input icon visibility in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
